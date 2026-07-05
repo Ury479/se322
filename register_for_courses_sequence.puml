@@ -1,0 +1,66 @@
+@startuml
+' SE322 - XYZ Tutoring Center
+' Sequence Diagram: Register for Courses
+' N-Tier Architecture
+
+skinparam style strictuml
+skinparam backgroundColor #FFFFFF
+skinparam sequenceArrowColor #333333
+skinparam sequenceLifeLineBorderColor #A0A0A0
+skinparam sequenceLifeLineBackgroundColor #F8F8F8
+skinparam sequenceParticipantBackgroundColor #FFFFFF
+skinparam sequenceParticipantBorderColor #333333
+
+' ─── Actors & Participants ───
+
+actor "Student" as Student
+
+boundary "RegistrationUI" as UI
+control "RegistrationController" as Controller
+control "RegistrationService" as Service
+entity "CourseRepository" as CourseRepo
+entity "RegistrationRepository" as RegRepo
+control "BillingService" as Billing
+actor "BillingSystem" as BillingSys
+
+== Authentication Phase ==
+
+Student -> UI: 1: enterCredentials(id, password)
+UI -> Controller: 2: login(id, password)
+Controller -> Controller: 3: validateCredentials()
+Controller --> UI: 4: loginResult(success)
+UI --> Student: 5: showDashboard()
+
+== Browse Courses Phase ==
+
+Student -> UI: 6: browseCourses()
+UI -> Controller: 7: getCourseCatalog()
+Controller -> Service: 8: getAvailableCourses()
+Service -> CourseRepo: 9: findAll()
+CourseRepo --> Service: 10: courses
+Service --> Controller: 11: availableCourses
+Controller --> UI: 12: displayCatalog(courses)
+UI --> Student: 13: showCourses(courses)
+
+== Register for Courses Phase ==
+
+Student -> UI: 14: selectCourses(courses)
+UI -> Controller: 15: register(studentId, courses)
+Controller -> Service: 16: processRegistration(studentId, courses)
+Service -> CourseRepo: 17: checkExists(courseId)
+CourseRepo --> Service: 18: exists(true/false)
+Service -> RegRepo: 19: checkExisting(studentId)
+RegRepo --> Service: 20: existingRegs
+Service -> CourseRepo: 21: checkCapacity(courseId)
+CourseRepo --> Service: 22: capacityOK(true/false)
+Service -> RegRepo: 23: save(registration)
+RegRepo --> Service: 24: savedReg
+Service -> Billing: 25: generateInvoice(studentId, regNo)
+Billing -> BillingSys: 26: createInvoice(data)
+BillingSys --> Billing: 27: invoiceConfirmation
+Billing --> Service: 28: billingResult
+Service --> Controller: 29: registrationResult(success)
+Controller --> UI: 30: showConfirmation()
+UI --> Student: 31: confirmation(details)
+
+@enduml

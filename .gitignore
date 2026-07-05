@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+
+# Large PDF inputs
+*.pdf
+
+# Generated test PNG
+/tmp/
+
+# Python
+__pycache__/
+*.pyc
