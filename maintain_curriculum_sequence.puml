@@ -1,0 +1,93 @@
+@startuml Maintain_Curriculum_Sequence_Diagram
+
+title Sequence Diagram: Maintain Curriculum\n(N-Tier Architecture — XYZ Tutoring Center — SE322)
+
+skinparam sequence {
+    ArrowColor #000000
+    ArrowFontColor #000000
+    LifeLineBorderColor #000000
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #000000
+    ParticipantBackgroundColor #FFFFFF
+    ActorBackgroundColor #FFFFFF
+    BoxBorderColor #666666
+    BoxFontColor #444444
+}
+
+skinparam stereotypeCBackgroundColor #FFFFFF
+skinparam stereotypeABackgroundColor #FFFFFF
+
+' ==== Presentation Tier ====
+actor "Registrar" as R <<actor>>
+boundary "RegistrarPortal" as RP <<boundary>>
+boundary "CurriculumUI" as UI <<boundary>>
+
+' ==== Application Tier ====
+control "CurriculumController" as CT <<control>>
+control "AuthService" as AS <<control>>
+control "CurriculumService" as CS <<control>>
+control "CourseService" as CRS <<control>>
+control "ScheduleService" as SS <<control>>
+
+' ==== Data Tier ====
+entity "CurriculumRepository" as CR <<entity>>
+entity "CourseRepository" as CRR <<entity>>
+entity "ScheduleRepository" as SR <<entity>>
+database "Database" as DB
+
+== Logon Validation (include) ==
+
+R -> RP: 1: openPortal()
+RP --> R: 2: requestLogin()
+R -> UI: 3: enterCredentials(id, password)
+UI -> CT: 4: login(id, password)
+CT -> AS: 5: validate(id, password)
+AS -> AS: 6: validateCredentials()
+AS --> CT: 7: loginResult(success)
+CT --> UI: 8: loginStatus(success)
+UI --> R: 9: showDashboard()
+
+== Maintain Curriculum (main flow) ==
+
+R -> UI: 10: selectMaintainCurriculum()
+UI -> CT: 11: maintainCurriculum()
+CT -> CS: 12: getCurriculum()
+CS -> CR: 13: findAll()
+CR -> DB: 14: SELECT * FROM curriculum
+DB --> CR: 15: curriculumData
+CR --> CS: 16: curriculums
+CS --> CT: 17: curriculumList
+CT --> UI: 18: displayCurriculum(curriculums)
+UI --> R: 19: showCurriculumForm()
+R -> UI: 20: updateCurriculum(info)
+UI -> CT: 21: updateCurriculum(info)
+CT -> CS: 22: saveCurriculum(info)
+CS -> CR: 23: save(curriculum)
+CR -> DB: 24: INSERT INTO curriculum
+DB --> CR: 25: saved
+CR --> CS: 26: savedCurriculum
+CS --> CT: 27: saveResult(success)
+
+== Create Course (include) ==
+
+CT -> CRS: 28: createCourse(courseInfo)
+CRS -> CRS: 29: validateCourseInfo()
+CRS -> CRR: 30: save(course)
+CRR -> DB: 31: INSERT INTO course
+DB --> CRR: 32: saved
+CRR --> CRS: 33: savedCourse
+
+== Maintain Schedule (include) ==
+
+CT -> SS: 34: maintainSchedule(scheduleInfo)
+SS -> SS: 35: checkTimeConflict()
+SS -> SR: 36: save(schedule)
+SR -> DB: 37: INSERT INTO schedule
+DB --> SR: 38: saved
+SR --> SS: 39: savedSchedule
+SS --> CT: 40: scheduleResult(success)
+
+CT --> UI: 41: showConfirmation(success)
+UI --> R: 42: maintainCurriculumSuccess()
+
+@enduml
